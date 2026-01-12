@@ -1,11 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import { ResponsiveSidebarProvider } from "@/components/responsive-sidebar-provider"
+import {
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { User, Mail, Phone, MapPin, Calendar, Briefcase, Edit, Save, X } from "lucide-react"
+import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -31,14 +39,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gradient-to-br from-sky-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your personal information</p>
+    <ResponsiveSidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sticky top-0 z-10">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <div className="flex items-center gap-2 flex-1">
+            <h1 className="text-lg font-semibold">Profile</h1>
           </div>
+        </header>
+        <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gradient-to-br from-sky-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-6">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-600 dark:text-gray-400">Manage your personal information</p>
+              </div>
           <div className="flex gap-2">
             {!isEditing ? (
               <Button
@@ -239,7 +256,11 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
-    </div>
+      <FloatingDockWrapper />
+      </SidebarInset>
+    </ResponsiveSidebarProvider>
   )
 }
+

@@ -15,10 +15,10 @@ import {
 const themes = [
   { name: "Default Light", value: "light", class: "" },
   { name: "Default Dark", value: "dark", class: "" },
-  { name: "Graphite", value: "graphite", class: "theme-graphite" },
-  { name: "Twitter Light", value: "twitter-light", class: "theme-twitter" },
-  { name: "Twitter Dark", value: "twitter-dark", class: "theme-twitter-dark" },
-  { name: "Cosmic Night", value: "cosmic", class: "theme-cosmic" },
+  { name: "Graphite", value: "theme-graphite", class: "theme-graphite" },
+  { name: "Twitter Light", value: "theme-twitter", class: "theme-twitter" },
+  { name: "Twitter Dark", value: "theme-twitter-dark", class: "theme-twitter-dark" },
+  { name: "Cosmic Night", value: "theme-cosmic", class: "theme-cosmic" },
 ]
 
 export function ThemeSwitcher() {
@@ -72,7 +72,7 @@ export function ThemeSwitcher() {
                       : ""
                   }`}
                 >
-                  {themeOption.value.includes("dark") || themeOption.value === "dark" || themeOption.value === "graphite" || themeOption.value === "cosmic" ? (
+                  {themeOption.value === "dark" || themeOption.value === "theme-graphite" || themeOption.value === "theme-twitter-dark" || themeOption.value === "theme-cosmic" ? (
                     <Moon className="h-4 w-4" />
                   ) : (
                     <Sun className="h-4 w-4" />

@@ -1,386 +1,739 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import { ResponsiveSidebarProvider } from "@/components/responsive-sidebar-provider"
 import {
-  Settings2,
-  ArrowUp,
-  ArrowDown,
-  Eye,
-  EyeOff,
-  GripVertical,
-} from "lucide-react"
-
-interface Column {
-  id: string
-  label: string
-  visible: boolean
-  order: number
-}
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ExternalLink, Info, Image as ImageIcon, Columns3, ListFilter, ArrowUp, ArrowDown, ArrowUpDown, GripVertical } from "lucide-react"
+import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface RouteData {
   id: number
-  routeName: string
-  method: string
-  path: string
-  controller: string
-  middleware: string
-  status: string
+  route: string
+  warehouse: string
+  shift: string
 }
 
-const initialData: RouteData[] = [
-  { id: 1, routeName: "Home", method: "GET", path: "/", controller: "HomeController", middleware: "auth", status: "Active" },
-  { id: 2, routeName: "Dashboard", method: "GET", path: "/dashboard", controller: "DashboardController", middleware: "auth", status: "Active" },
-  { id: 3, routeName: "Profile", method: "GET", path: "/profile", controller: "ProfileController", middleware: "auth", status: "Active" },
-  { id: 4, routeName: "Settings", method: "GET", path: "/settings", controller: "SettingsController", middleware: "auth", status: "Active" },
-  { id: 5, routeName: "Users List", method: "GET", path: "/users", controller: "UserController", middleware: "auth,admin", status: "Active" },
-  { id: 6, routeName: "Create User", method: "POST", path: "/users", controller: "UserController", middleware: "auth,admin", status: "Active" },
-  { id: 7, routeName: "Update User", method: "PUT", path: "/users/:id", controller: "UserController", middleware: "auth,admin", status: "Active" },
-  { id: 8, routeName: "Delete User", method: "DELETE", path: "/users/:id", controller: "UserController", middleware: "auth,admin", status: "Active" },
-  { id: 9, routeName: "Calendar", method: "GET", path: "/calendar", controller: "CalendarController", middleware: "auth", status: "Active" },
-  { id: 10, routeName: "Maps", method: "GET", path: "/maps", controller: "MapsController", middleware: "auth", status: "Active" },
-  { id: 11, routeName: "Documents", method: "GET", path: "/documents", controller: "DocumentController", middleware: "auth", status: "Active" },
-  { id: 12, routeName: "Analytics", method: "GET", path: "/analytics", controller: "AnalyticsController", middleware: "auth", status: "Active" },
-  { id: 13, routeName: "Inbox", method: "GET", path: "/inbox", controller: "InboxController", middleware: "auth", status: "Active" },
-  { id: 14, routeName: "Messages", method: "GET", path: "/messages", controller: "MessageController", middleware: "auth", status: "Active" },
-  { id: 15, routeName: "Notifications", method: "GET", path: "/notifications", controller: "NotificationController", middleware: "auth", status: "Active" },
-  { id: 16, routeName: "Sign In", method: "POST", path: "/signin", controller: "AuthController", middleware: "guest", status: "Active" },
-  { id: 17, routeName: "Sign Up", method: "POST", path: "/signup", controller: "AuthController", middleware: "guest", status: "Active" },
-  { id: 18, routeName: "Logout", method: "POST", path: "/logout", controller: "AuthController", middleware: "auth", status: "Active" },
-  { id: 19, routeName: "API Health", method: "GET", path: "/api/health", controller: "HealthController", middleware: "none", status: "Active" },
-  { id: 20, routeName: "API Status", method: "GET", path: "/api/status", controller: "StatusController", middleware: "none", status: "Active" },
+interface DetailData {
+  id: number
+  no: number
+  code: string
+  location: string
+  delivery: string
+  thumbnail: string
+  status: boolean
+  description: string
+  images: string[]
+}
+
+const routesData: RouteData[] = [
+  { id: 1, route: "KL 7", warehouse: "3PVK04", shift: "PM" },
+  { id: 2, route: "KL 8", warehouse: "3PVK05", shift: "AM" },
+  { id: 3, route: "KL 9", warehouse: "3PVK06", shift: "PM" },
+  { id: 4, route: "SG 5", warehouse: "3PVK07", shift: "AM" },
+  { id: 5, route: "JB 3", warehouse: "3PVK08", shift: "PM" },
 ]
 
-const initialColumns: Column[] = [
-  { id: "routeName", label: "Route Name", visible: true, order: 1 },
-  { id: "method", label: "Method", visible: true, order: 2 },
-  { id: "path", label: "Path", visible: true, order: 3 },
-  { id: "controller", label: "Controller", visible: true, order: 4 },
-  { id: "middleware", label: "Middleware", visible: true, order: 5 },
-  { id: "status", label: "Status", visible: true, order: 6 },
+const detailsData: DetailData[] = [
+  { 
+    id: 1, 
+    no: 1, 
+    code: "54", 
+    location: "RHB Complex", 
+    delivery: "Daily", 
+    thumbnail: "📦",
+    status: true,
+    description: "Premium delivery service for RHB Complex. Includes real-time tracking, secure handling, and priority processing. Operating hours: 8AM - 6PM daily.",
+    images: ["🏢", "🚚", "📍"]
+  },
+  { 
+    id: 2, 
+    no: 2, 
+    code: "78", 
+    location: "KLCC Tower", 
+    delivery: "Express", 
+    thumbnail: "🎁",
+    status: true,
+    description: "Express delivery service for KLCC Tower with same-day delivery guarantee. Climate-controlled transport available.",
+    images: ["🏙️", "⚡", "🎯"]
+  },
+  { 
+    id: 3, 
+    no: 3, 
+    code: "92", 
+    location: "Pavilion Mall", 
+    delivery: "Standard", 
+    thumbnail: "📮",
+    status: false,
+    description: "Standard delivery service for Pavilion Mall. Scheduled deliveries on weekdays with flexible time slots.",
+    images: ["🛍️", "🚐", "⏰"]
+  },
+  { 
+    id: 4, 
+    no: 4, 
+    code: "45", 
+    location: "Mid Valley", 
+    delivery: "Daily", 
+    thumbnail: "📦",
+    status: true,
+    description: "Daily bulk delivery service for Mid Valley. Specialized in handling large volume orders with dedicated support.",
+    images: ["🏬", "🚛", "📊"]
+  },
+  { 
+    id: 5, 
+    no: 5, 
+    code: "67", 
+    location: "Sunway Pyramid", 
+    delivery: "Express", 
+    thumbnail: "🎁",
+    status: false,
+    description: "Express courier service for Sunway Pyramid area. Features contactless delivery and photo confirmation.",
+    images: ["🏰", "🏃", "📸"]
+  },
+  { 
+    id: 6, 
+    no: 6, 
+    code: "89", 
+    location: "IOI City Mall", 
+    delivery: "Standard", 
+    thumbnail: "📮",
+    status: true,
+    description: "Standard logistics service for IOI City Mall with eco-friendly packaging options and carbon-neutral delivery.",
+    images: ["🏢", "♻️", "🌱"]
+  },
 ]
 
 export default function RoutesPage() {
-  const [data] = useState<RouteData[]>(initialData)
-  const [columns, setColumns] = useState<Column[]>(initialColumns)
-  const [showColumnCustomizer, setShowColumnCustomizer] = useState(false)
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set())
+  const [dialogVisible, setDialogVisible] = useState(false)
+  const [infoDialogVisible, setInfoDialogVisible] = useState(false)
+  const [selectedDetail, setSelectedDetail] = useState<DetailData | null>(null)
+  const [columnCustomizeVisible, setColumnCustomizeVisible] = useState(false)
+  const [rowCustomizeVisible, setRowCustomizeVisible] = useState(false)
+  const [columnReorderVisible, setColumnReorderVisible] = useState(false)
+  const [rowReorderVisible, setRowReorderVisible] = useState(false)
+  
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState({
+    no: true,
+    code: true,
+    location: true,
+    delivery: true,
+    images: true,
+    action: true,
+  })
 
-  const visibleColumns = useMemo(() => {
-    return columns
-      .filter((col) => col.visible)
-      .sort((a, b) => a.order - b.order)
-  }, [columns])
+  // Column order state
+  const [columnOrder, setColumnOrder] = useState<(keyof typeof visibleColumns)[]>(["no", "code", "location", "delivery", "images", "action"])
 
-  const handleColumnVisibilityToggle = (columnId: string) => {
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === columnId ? { ...col, visible: !col.visible } : col
-      )
-    )
+  // Row customization state
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [sortBy, setSortBy] = useState("no")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  
+  // Row order state
+  const [rowOrder, setRowOrder] = useState<number[]>([1, 2, 3, 4, 5, 6])
+
+  const toggleColumn = (column: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({ ...prev, [column]: !prev[column] }))
   }
 
-  const handleColumnOrderChange = (columnId: string, newOrder: string) => {
-    const order = parseInt(newOrder)
-    if (isNaN(order) || order < 1) return
-
-    setColumns((prev) => {
-      const updated = prev.map((col) =>
-        col.id === columnId ? { ...col, order } : col
-      )
-      return updated
-    })
+  const moveColumnUp = (index: number) => {
+    if (index > 0) {
+      const newOrder = [...columnOrder]
+      ;[newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]]
+      setColumnOrder(newOrder)
+    }
   }
 
-  const moveColumnUp = (columnId: string) => {
-    setColumns((prev) => {
-      const colIndex = prev.findIndex((col) => col.id === columnId)
-      if (colIndex <= 0) return prev
+  const moveColumnDown = (index: number) => {
+    if (index < columnOrder.length - 1) {
+      const newOrder = [...columnOrder]
+      ;[newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]]
+      setColumnOrder(newOrder)
+    }
+  }
 
-      const newColumns = [...prev]
-      const currentOrder = newColumns[colIndex].order
-      const prevCol = newColumns.find((col) => col.order === currentOrder - 1)
+  const moveRowUp = (index: number) => {
+    if (index > 0) {
+      const newOrder = [...rowOrder]
+      ;[newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]]
+      setRowOrder(newOrder)
+    }
+  }
 
-      if (prevCol) {
-        prevCol.order = currentOrder
-        newColumns[colIndex].order = currentOrder - 1
+  const moveRowDown = (index: number) => {
+    if (index < rowOrder.length - 1) {
+      const newOrder = [...rowOrder]
+      ;[newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]]
+      setRowOrder(newOrder)
+    }
+  }
+
+  const sortedData = [...detailsData]
+    .sort((a, b) => {
+      // First apply custom row order
+      const aIndex = rowOrder.indexOf(a.id)
+      const bIndex = rowOrder.indexOf(b.id)
+      if (aIndex !== bIndex) {
+        return aIndex - bIndex
       }
-
-      return newColumns
-    })
-  }
-
-  const moveColumnDown = (columnId: string) => {
-    setColumns((prev) => {
-      const colIndex = prev.findIndex((col) => col.id === columnId)
-      if (colIndex === -1 || colIndex >= prev.length - 1) return prev
-
-      const newColumns = [...prev]
-      const currentOrder = newColumns[colIndex].order
-      const nextCol = newColumns.find((col) => col.order === currentOrder + 1)
-
-      if (nextCol) {
-        nextCol.order = currentOrder
-        newColumns[colIndex].order = currentOrder + 1
-      }
-
-      return newColumns
-    })
-  }
-
-  const handleRowSelect = (id: number) => {
-    setSelectedRows((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
+      // Then apply sorting
+      const aValue = a[sortBy as keyof DetailData]
+      const bValue = b[sortBy as keyof DetailData]
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1
       } else {
-        newSet.add(id)
+        return aValue < bValue ? 1 : -1
       }
-      return newSet
     })
+    .slice(0, rowsPerPage)
+
+  const toggleStatus = (id: number) => {
+    // Toggle status logic here
+    console.log(`Toggle status for id: ${id}`)
   }
 
-  const handleSelectAll = () => {
-    if (selectedRows.size === data.length) {
-      setSelectedRows(new Set())
-    } else {
-      setSelectedRows(new Set(data.map((row) => row.id)))
-    }
-  }
-
-  const getMethodColor = (method: string) => {
-    switch (method) {
-      case "GET":
-        return "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400"
-      case "POST":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-      case "PUT":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-      case "DELETE":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-    }
+  const showInfo = (detail: DetailData) => {
+    setSelectedDetail(detail)
+    setInfoDialogVisible(true)
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] overflow-y-auto p-6 space-y-6 bg-gradient-to-br from-sky-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-sky-700 dark:text-sky-400">Routes</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage and view all application routes
-          </p>
-        </div>
-        <Button
-          onClick={() => setShowColumnCustomizer(!showColumnCustomizer)}
-          variant="outline"
-          className="gap-2"
-        >
-          <Settings2 className="h-4 w-4" />
-          Customize Columns
-        </Button>
-      </div>
+    <ResponsiveSidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sticky top-0 z-10">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <div className="flex items-center gap-2 flex-1">
+            <h1 className="text-lg font-semibold">Routes</h1>
+          </div>
+        </header>
+        <div className="h-[calc(100vh-64px)] overflow-y-auto bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Route Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-auto max-h-[calc(100vh-250px)] relative">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow>
+                    <TableHead className="text-center">Route</TableHead>
+                    <TableHead className="text-center">Warehouse</TableHead>
+                    <TableHead className="text-center">Shift</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routesData.map((route) => (
+                    <TableRow key={route.id}>
+                      <TableCell className="font-medium text-center">{route.route}</TableCell>
+                      <TableCell className="text-center">{route.warehouse}</TableCell>
+                      <TableCell className="text-center">{route.shift}</TableCell>
+                      <TableCell className="text-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setDialogVisible(true)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Show
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              </div>
+            </CardContent>
+          </Card>
 
-      {showColumnCustomizer && (
-        <Card className="border-sky-200 dark:border-sky-900">
-          <CardHeader className="bg-sky-50 dark:bg-sky-950/30">
-            <CardTitle className="text-sky-700 dark:text-sky-400">Column Customization</CardTitle>
-            <CardDescription>
-              Show/hide columns and reorder them using the input fields or arrow buttons
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              {columns
-                .sort((a, b) => a.order - b.order)
-                .map((column) => (
-                  <div
-                    key={column.id}
-                    className="flex items-center gap-4 p-3 rounded-lg border border-sky-100 dark:border-sky-900/50 bg-white dark:bg-gray-950"
-                  >
-                    <GripVertical className="h-4 w-4 text-gray-400" />
-                    <div className="flex items-center gap-2 min-w-[150px]">
-                      <Checkbox
-                        checked={column.visible}
-                        onCheckedChange={() => handleColumnVisibilityToggle(column.id)}
-                      />
-                      <span className="font-medium text-sm">{column.label}</span>
-                      {column.visible ? (
-                        <Eye className="h-4 w-4 text-sky-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
+          <Dialog open={dialogVisible} onOpenChange={setDialogVisible}>
+            <DialogContent className="max-w-[85vw] max-h-[85vh]">
+              <DialogHeader>
+                <DialogTitle>Flex Scroll</DialogTitle>
+              </DialogHeader>
+              
+              {/* Customize Buttons */}
+              <div className="flex gap-2 mb-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setColumnCustomizeVisible(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Columns3 className="h-4 w-4" />
+                  Column Customize
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setRowCustomizeVisible(true)}
+                  className="flex items-center gap-2"
+                >
+                  <ListFilter className="h-4 w-4" />
+                  Row Customize
+                </Button>
+              </div>
+
+              <div className="overflow-auto max-h-[calc(85vh-180px)] relative">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                    <TableRow>
+                      {columnOrder.map((col) => 
+                        visibleColumns[col] && (
+                          <TableHead key={col} className="text-center font-semibold capitalize">
+                            {col}
+                          </TableHead>
+                        )
                       )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm text-muted-foreground">Order:</label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={column.order}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleColumnOrderChange(column.id, e.target.value)
-                        }
-                        className="w-20 h-8 text-center"
-                      />
-                    </div>
-                    <div className="flex gap-1 ml-auto">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => moveColumnUp(column.id)}
-                        disabled={column.order === 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => moveColumnDown(column.id)}
-                        disabled={column.order === columns.length}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ArrowDown className="h-4 w-4" />
-                      </Button>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedData.map((detail) => (
+                      <TableRow key={detail.id}>
+                        {columnOrder.map((col) => {
+                          if (!visibleColumns[col]) return null
+                          
+                          if (col === "no") {
+                            return <TableCell key={col} className="text-center font-medium">{detail.no}</TableCell>
+                          }
+                          if (col === "code") {
+                            return <TableCell key={col} className="text-center font-semibold text-primary">{detail.code}</TableCell>
+                          }
+                          if (col === "location") {
+                            return <TableCell key={col} className="text-center">{detail.location}</TableCell>
+                          }
+                          if (col === "delivery") {
+                            return (
+                              <TableCell key={col} className="text-center">
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  detail.delivery === 'Express' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                  detail.delivery === 'Daily' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                }`}>
+                                  {detail.delivery}
+                                </span>
+                              </TableCell>
+                            )
+                          }
+                          if (col === "images") {
+                            return <TableCell key={col} className="text-center text-2xl">{detail.thumbnail}</TableCell>
+                          }
+                          if (col === "action") {
+                            return (
+                              <TableCell key={col} className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Button 
+                                    variant={detail.status ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => toggleStatus(detail.id)}
+                                    className="min-w-[60px]"
+                                  >
+                                    {detail.status ? "ON" : "OFF"}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => showInfo(detail)}
+                                    className="hover:bg-primary/10"
+                                  >
+                                    <Info className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            )
+                          }
+                          return null
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => setDialogVisible(false)}>
+                  Ok
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* iOS-style Info Card Dialog */}
+          <Dialog open={infoDialogVisible} onOpenChange={setInfoDialogVisible}>
+            <DialogContent className="max-w-md max-h-[90vh] p-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-0 shadow-2xl">
+              <DialogHeader className="sr-only">
+                <DialogTitle>Delivery Information</DialogTitle>
+              </DialogHeader>
+              {selectedDetail && (
+                <div className="overflow-auto max-h-[90vh]">
+                  {/* Header Section */}
+                  <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="absolute inset-0 flex items-center justify-center gap-4">
+                      {selectedDetail.images.map((img, idx) => (
+                        <div key={idx} className="text-6xl transform hover:scale-110 transition-transform animate-in zoom-in duration-300" style={{ animationDelay: `${idx * 100}ms` }}>
+                          {img}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      <Card className="border-sky-200 dark:border-sky-900">
-        <CardHeader className="bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30">
-          <CardTitle className="text-sky-700 dark:text-sky-400">
-            Routes Table
-          </CardTitle>
-          <CardDescription>
-            {selectedRows.size > 0 && (
-              <span className="text-sky-600 dark:text-sky-400 font-medium">
-                {selectedRows.size} row(s) selected
-              </span>
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-auto h-[calc(100vh-300px)] min-h-[400px] max-h-[700px] border-t">
-            <table className="w-full">
-              <thead className="sticky top-0 bg-sky-100 dark:bg-sky-950/50 z-10 shadow-sm">
-                <tr>
-                  <th className="px-4 py-3 text-left">
-                    <Checkbox
-                      checked={selectedRows.size === data.length}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </th>
-                  {visibleColumns.map((column) => (
-                    <th
-                      key={column.id}
-                      className="px-4 py-3 text-left text-sm font-semibold text-sky-900 dark:text-sky-300"
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className={`
-                      border-b border-sky-100 dark:border-sky-900/30
-                      hover:bg-sky-50 dark:hover:bg-sky-950/20
-                      transition-colors
-                      ${selectedRows.has(row.id) ? "bg-sky-50 dark:bg-sky-950/30" : ""}
-                      ${index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-gray-50/50 dark:bg-gray-900/20"}
-                    `}
-                  >
-                    <td className="px-4 py-3">
-                      <Checkbox
-                        checked={selectedRows.has(row.id)}
-                        onCheckedChange={() => handleRowSelect(row.id)}
-                      />
-                    </td>
-                    {visibleColumns.map((column) => (
-                      <td key={column.id} className="px-4 py-3 text-sm">
-                        {column.id === "method" ? (
-                          <span
-                            className={`px-2 py-1 rounded-md text-xs font-semibold ${getMethodColor(
-                              row[column.id as keyof RouteData] as string
-                            )}`}
-                          >
-                            {row[column.id as keyof RouteData]}
-                          </span>
-                        ) : column.id === "status" ? (
-                          <span className="px-2 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                            {row[column.id as keyof RouteData]}
-                          </span>
-                        ) : column.id === "path" ? (
-                          <code className="text-sky-700 dark:text-sky-400 font-mono text-xs">
-                            {row[column.id as keyof RouteData]}
-                          </code>
-                        ) : (
-                          <span className="text-gray-900 dark:text-gray-100">
-                            {row[column.id as keyof RouteData]}
-                          </span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {selectedRows.size > 0 && (
-        <Card className="border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/20">
-          <CardHeader>
-            <CardTitle className="text-sky-700 dark:text-sky-400">
-              Selected Routes Order
-            </CardTitle>
-            <CardDescription>
-              View the order of selected routes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {Array.from(selectedRows)
-                .sort((a, b) => a - b)
-                .map((id, index) => {
-                  const route = data.find((r) => r.id === id)
-                  if (!route) return null
-                  return (
-                    <div
-                      key={id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-gray-950 border border-sky-200 dark:border-sky-900"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-600 text-white font-bold text-sm">
-                        {index + 1}
+                  {/* Content Section */}
+                  <div className="p-6 space-y-4">
+                    {/* Title Card */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedDetail.location}</h3>
+                        <span className="text-3xl">{selectedDetail.thumbnail}</span>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-sky-900 dark:text-sky-300">
-                          {route.routeName}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          <code className="text-sky-600 dark:text-sky-400">
-                            {route.method} {route.path}
-                          </code>
-                        </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-semibold">
+                          Code: {selectedDetail.code}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full font-medium ${
+                          selectedDetail.delivery === 'Express' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                          selectedDetail.delivery === 'Daily' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                        }`}>
+                          {selectedDetail.delivery}
+                        </span>
                       </div>
                     </div>
-                  )
-                })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+
+                    {/* Status Card */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${selectedDetail.status ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Status</span>
+                        </div>
+                        <span className={`px-4 py-1.5 rounded-full font-semibold ${
+                          selectedDetail.status 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                        }`}>
+                          {selectedDetail.status ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Description Card */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-2 mb-3">
+                        <ImageIcon className="w-5 h-5 text-primary" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Description</h4>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">
+                        {selectedDetail.description}
+                      </p>
+                    </div>
+
+                    {/* Image Gallery Card */}
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Gallery</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        {selectedDetail.images.map((img, idx) => (
+                          <div 
+                            key={idx} 
+                            className="aspect-square bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-xl flex items-center justify-center text-4xl hover:scale-105 transition-transform cursor-pointer shadow-sm"
+                          >
+                            {img}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Close Button */}
+                    <Button 
+                      onClick={() => setInfoDialogVisible(false)}
+                      className="w-full rounded-xl h-12 font-semibold shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Column Customize Modal */}
+          <Dialog open={columnCustomizeVisible} onOpenChange={setColumnCustomizeVisible}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Columns3 className="h-5 w-5" />
+                  Column Customize
+                </DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(visibleColumns).map(([key, value]) => (
+                    <div key={key} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`col-${key}`}
+                        checked={value}
+                        onCheckedChange={() => toggleColumn(key as keyof typeof visibleColumns)}
+                      />
+                      <Label
+                        htmlFor={`col-${key}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize cursor-pointer"
+                      >
+                        {key}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setColumnCustomizeVisible(false)
+                    setColumnReorderVisible(true)
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                  Re-order
+                </Button>
+                <Button onClick={() => setColumnCustomizeVisible(false)}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Row Customize Modal */}
+          <Dialog open={rowCustomizeVisible} onOpenChange={setRowCustomizeVisible}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ListFilter className="h-5 w-5" />
+                  Row Customize
+                </DialogTitle>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                <div>
+                  <Label htmlFor="rowsPerPage" className="text-sm mb-2 block">Rows Per Page</Label>
+                  <Input
+                    id="rowsPerPage"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sortBy" className="text-sm mb-2 block">Sort By</Label>
+                  <select
+                    id="sortBy"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="no">No</option>
+                    <option value="code">Code</option>
+                    <option value="location">Location</option>
+                    <option value="delivery">Delivery</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-sm mb-2 block">Sort Order</Label>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    className="w-full flex items-center justify-between"
+                  >
+                    <span>{sortOrder === "asc" ? "Ascending" : "Descending"}</span>
+                    {sortOrder === "asc" ? (
+                      <ArrowUp className="h-4 w-4 ml-2" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4 ml-2" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Showing {sortedData.length} of {detailsData.length} rows
+                </p>
+              </div>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setRowCustomizeVisible(false)
+                    setRowReorderVisible(true)
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                  Re-order
+                </Button>
+                <Button onClick={() => setRowCustomizeVisible(false)}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Column Re-order Modal */}
+          <Dialog open={columnReorderVisible} onOpenChange={setColumnReorderVisible}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ArrowUpDown className="h-5 w-5" />
+                  Re-order Columns
+                </DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <div className="space-y-2">
+                  {columnOrder.map((col, index) => (
+                    <div 
+                      key={col} 
+                      className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg hover:bg-secondary/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium capitalize">{col}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveColumnUp(index)}
+                          disabled={index === 0}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveColumnDown(index)}
+                          disabled={index === columnOrder.length - 1}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setColumnReorderVisible(false)
+                    setColumnCustomizeVisible(true)
+                  }}
+                >
+                  Back
+                </Button>
+                <Button onClick={() => setColumnReorderVisible(false)}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Row Re-order Modal */}
+          <Dialog open={rowReorderVisible} onOpenChange={setRowReorderVisible}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ArrowUpDown className="h-5 w-5" />
+                  Re-order Rows
+                </DialogTitle>
+              </DialogHeader>
+              <div className="py-4 max-h-[400px] overflow-y-auto">
+                <div className="space-y-2">
+                  {rowOrder.map((rowId, index) => {
+                    const detail = detailsData.find(d => d.id === rowId)
+                    if (!detail) return null
+                    return (
+                      <div 
+                        key={rowId} 
+                        className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg hover:bg-secondary/30 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <GripVertical className="h-5 w-5 text-muted-foreground" />
+                          <div className="flex items-center gap-3">
+                            <span className="font-semibold text-primary">{detail.code}</span>
+                            <span className="text-sm text-muted-foreground">{detail.location}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveRowUp(index)}
+                            disabled={index === 0}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveRowDown(index)}
+                            disabled={index === rowOrder.length - 1}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setRowReorderVisible(false)
+                    setRowCustomizeVisible(true)
+                  }}
+                >
+                  Back
+                </Button>
+                <Button onClick={() => setRowReorderVisible(false)}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <FloatingDockWrapper />
+      </SidebarInset>
+    </ResponsiveSidebarProvider>
   )
 }
