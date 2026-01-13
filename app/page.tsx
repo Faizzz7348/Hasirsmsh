@@ -9,41 +9,38 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 
 export default function Home() {
   return (
-    <TooltipProvider>
-      <ResponsiveSidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sticky top-0 z-10">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center gap-2 flex-1">
-              <h1 className="text-lg font-semibold">Dashboard</h1>
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 h-[calc(100vh-64px)] overflow-y-auto">
+    <ResponsiveSidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-3 border-b-0 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 px-4 sticky top-0 z-10 shadow-sm">
+          <SidebarTrigger className="-ml-1 h-8 w-8" />
+          <Separator orientation="vertical" className="mr-2 h-5 bg-border/30" />
+          <div className="flex items-center gap-2 flex-1">
+            <h1 className="text-base font-semibold tracking-tight">Dashboard</h1>
+          </div>
+        </header>
+        <div className="flex flex-col gap-4 p-4 h-[calc(100vh-48px)] overflow-y-auto bg-muted/30">
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-              <div className="aspect-video rounded-xl bg-muted/50 p-4">
-                <h2 className="font-semibold mb-2">Welcome</h2>
-                <p className="text-sm text-muted-foreground">
+              <div className="aspect-video rounded-2xl bg-card backdrop-blur-xl border-0 shadow-lg p-4">
+                <h2 className="text-base font-semibold mb-2 tracking-tight">Welcome</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   This is a responsive dashboard with auto device detection.
                 </p>
               </div>
-              <div className="aspect-video rounded-xl bg-muted/50 p-4">
-                <h2 className="font-semibold mb-2">Features</h2>
-                <ul className="text-sm text-muted-foreground space-y-1">
+              <div className="aspect-video rounded-2xl bg-card backdrop-blur-xl border-0 shadow-lg p-4">
+                <h2 className="text-base font-semibold mb-2 tracking-tight">Features</h2>
+                <ul className="text-sm text-muted-foreground space-y-1.5 leading-relaxed">
                   <li>• Auto responsive layout</li>
                   <li>• Device detection</li>
                   <li>• Multiple themes</li>
                 </ul>
               </div>
-              <div className="aspect-video rounded-xl bg-muted/50 p-4">
-                <h2 className="font-semibold mb-2">Themes</h2>
-                <ul className="text-sm text-muted-foreground space-y-1">
+              <div className="aspect-video rounded-2xl bg-card backdrop-blur-xl border-0 shadow-lg p-4">
+                <h2 className="text-base font-semibold mb-2 tracking-tight">Themes</h2>
+                <ul className="text-sm text-muted-foreground space-y-1.5 leading-relaxed">
                   <li>• Twitter (Light/Dark)</li>
                   <li>• Graphite</li>
                   <li>• Cosmic Night</li>
@@ -55,12 +52,12 @@ export default function Home() {
             
             <NotificationDemo />
             
-            <div className="flex-1 rounded-xl bg-muted/50 p-4">
-              <h2 className="font-semibold mb-4">Responsive Design</h2>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="flex-1 rounded-2xl bg-card backdrop-blur-xl border-0 shadow-lg p-4">
+              <h2 className="text-base font-semibold mb-3 tracking-tight">Responsive Design</h2>
+              <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                 This dashboard automatically adapts to your screen size:
               </p>
-              <ul className="text-sm text-muted-foreground space-y-2">
+              <ul className="text-sm text-muted-foreground space-y-2 leading-relaxed">
                 <li>
                   • <strong>Mobile (&lt;768px):</strong> Compact layout with collapsible sidebar
                 </li>
@@ -82,9 +79,7 @@ export default function Home() {
               </ul>
             </div>
           </div>
-          <FloatingDockWrapper />
         </SidebarInset>
       </ResponsiveSidebarProvider>
-    </TooltipProvider>
   )
 }

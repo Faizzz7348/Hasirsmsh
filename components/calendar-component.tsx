@@ -263,12 +263,12 @@ export function CalendarComponent() {
               onClick={cycleView}
               className={`
                 ${currentViewOption.color}
-                text-white px-4 py-2 rounded-lg
-                flex items-center gap-2
+                text-white px-3 py-1.5 rounded-lg
+                flex items-center gap-1.5
                 transition-all duration-200
                 shadow-sm hover:shadow-md
                 active:scale-95
-                text-sm
+                text-xs
               `}
             >
               {currentViewOption.icon}
@@ -327,12 +327,12 @@ export function CalendarComponent() {
           }
           
           .fc-toolbar-title {
-            font-size: 1.25rem !important;
+            font-size: 14px !important;
           }
           
           .fc-button {
             padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
+            font-size: 12px;
           }
         }
 
@@ -363,7 +363,8 @@ export function CalendarComponent() {
         .fc .fc-button {
           text-transform: capitalize;
           font-weight: 500;
-          padding: 0.5rem 1rem;
+          padding: 0.375rem 0.75rem;
+          font-size: 12px;
         }
 
         /* Redesigned buttons for today, next, prev - similar to multiple button */
@@ -374,8 +375,9 @@ export function CalendarComponent() {
           border: none !important;
           color: #ffffff !important;
           border-radius: 0.5rem !important;
-          padding: 0.5rem 1rem !important;
+          padding: 0.375rem 0.75rem !important;
           font-weight: 500 !important;
+          font-size: 12px !important;
           box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
           transition: all 0.2s ease !important;
         }
@@ -464,6 +466,7 @@ export function CalendarComponent() {
         .fc .fc-col-header-cell-cushion {
           color: #ffffff !important;
           font-weight: 600;
+          font-size: 13px;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -475,7 +478,7 @@ export function CalendarComponent() {
 
         .fc .fc-toolbar-title {
           color: hsl(var(--foreground));
-          font-size: 1.5rem;
+          font-size: 14px;
           font-weight: 600;
           text-align: center;
         }
@@ -493,6 +496,10 @@ export function CalendarComponent() {
         .fc .fc-col-header-cell-cushion {
           color: hsl(var(--foreground));
           text-decoration: none;
+        }
+        
+        .fc .fc-daygrid-day-number {
+          font-size: 12px;
         }
 
         .fc .fc-daygrid-day-number:hover,
@@ -517,6 +524,13 @@ export function CalendarComponent() {
         .fc-daygrid-event {
           padding: 2px 4px;
           transition: transform 0.2s ease;
+        }
+        
+        .fc-event-title,
+        .fc-event-time,
+        .fc-list-event-title,
+        .fc-list-event-time {
+          font-size: 12px;
         }
 
         .fc .fc-daygrid-event-dot {

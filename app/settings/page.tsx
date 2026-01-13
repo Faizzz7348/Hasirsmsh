@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { useTheme } from "next-themes"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ResponsiveSidebarProvider } from "@/components/responsive-sidebar-provider"
+import { SettingsMenu } from "@/components/settings-menu"
 import {
   SidebarInset,
   SidebarTrigger,
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 import {
   Settings,
   User,
@@ -140,12 +140,12 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: "general", label: "General", icon: Settings },
-    { id: "account", label: "Account", icon: User },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "privacy", label: "Privacy", icon: Shield },
-    { id: "security", label: "Security", icon: Lock },
-    { id: "appearance", label: "Appearance", icon: Palette },
+    { id: "general", label: "General", icon: <Settings className="w-4 h-4" /> },
+    { id: "account", label: "Account", icon: <User className="w-4 h-4" /> },
+    { id: "notifications", label: "Notifications", icon: <Bell className="w-4 h-4" /> },
+    { id: "privacy", label: "Privacy", icon: <Shield className="w-4 h-4" /> },
+    { id: "security", label: "Security", icon: <Lock className="w-4 h-4" /> },
+    { id: "appearance", label: "Appearance", icon: <Palette className="w-4 h-4" /> },
   ]
 
   return (
@@ -155,8 +155,13 @@ export default function SettingsPage() {
         <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sticky top-0 z-10">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center justify-between gap-2 flex-1">
             <h1 className="text-lg font-semibold">Settings</h1>
+            <SettingsMenu 
+              items={tabs}
+              activeItem={activeTab}
+              onItemSelect={setActiveTab}
+            />
           </div>
         </header>
         <div className="flex flex-col gap-6 p-6 h-[calc(100vh-64px)] overflow-y-auto bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
@@ -166,34 +171,7 @@ export default function SettingsPage() {
               <p className="text-gray-600 dark:text-gray-400">Kelola preferensi dan konfigurasi aplikasi Anda</p>
             </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Navigation */}
-          <Card className="lg:col-span-1 h-fit border-purple-200 dark:border-purple-800">
-            <CardContent className="p-4">
-              <nav className="space-y-1">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                        activeTab === tab.id
-                          ? "bg-purple-600 text-white shadow-md"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  )
-                })}
-              </nav>
-            </CardContent>
-          </Card>
-
-          {/* Content Area */}
-          <div className="lg:col-span-3 space-y-6">
+        <div className="space-y-6">
             {/* General Settings */}
             {activeTab === "general" && (
               <Card className="border-purple-200 dark:border-purple-800">
@@ -669,9 +647,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-      </div>
       
-      <FloatingDockWrapper />
       </SidebarInset>
     </ResponsiveSidebarProvider>
   )

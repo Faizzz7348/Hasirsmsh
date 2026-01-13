@@ -8,25 +8,25 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { MapsComponent } from "@/components/maps-component"
-import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 
 export default function MapsPage() {
   return (
     <ResponsiveSidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sticky top-0 z-10">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
+        <header className="flex h-12 shrink-0 items-center gap-3 border-b-0 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 px-4 sticky top-0 z-10 shadow-sm">
+          <SidebarTrigger className="-ml-1 h-8 w-8" />
+          <Separator orientation="vertical" className="mr-2 h-5 bg-border/30" />
           <div className="flex items-center gap-2 flex-1">
-            <h1 className="text-lg font-semibold">Maps Marker</h1>
+            <h1 className="text-base font-semibold tracking-tight">Maps Marker</h1>
           </div>
         </header>
-        <div className="flex flex-col gap-4 p-6 h-[calc(100vh-64px)] overflow-y-auto">
+        <div className="flex flex-col gap-4 p-4 h-[calc(100vh-48px)] overflow-y-auto bg-muted/30">
           <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground">
-              Interactive map with markers. Add, remove, and manage location markers on the map.
-              Click on markers to see details and interact with the map controls.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Interactive map with markers automatically generated from active route locations. 
+              View all active delivery points with their coordinates, codes, and delivery types.
+              Add custom markers or manage existing ones with the map controls.
             </p>
           </div>
 
@@ -34,7 +34,6 @@ export default function MapsPage() {
             <MapsComponent />
           </div>
         </div>
-        <FloatingDockWrapper />
       </SidebarInset>
     </ResponsiveSidebarProvider>
   )

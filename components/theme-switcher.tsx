@@ -13,12 +13,16 @@ import {
 } from "@/components/ui/tooltip"
 
 const themes = [
-  { name: "Default Light", value: "light", class: "" },
-  { name: "Default Dark", value: "dark", class: "" },
-  { name: "Graphite", value: "theme-graphite", class: "theme-graphite" },
-  { name: "Twitter Light", value: "theme-twitter", class: "theme-twitter" },
-  { name: "Twitter Dark", value: "theme-twitter-dark", class: "theme-twitter-dark" },
-  { name: "Cosmic Night", value: "theme-cosmic", class: "theme-cosmic" },
+  { name: "Default Light", value: "light", class: "", isDark: false },
+  { name: "Default Dark", value: "dark", class: "", isDark: true },
+  { name: "Graphite", value: "theme-graphite", class: "theme-graphite", isDark: true },
+  { name: "Twitter Light", value: "theme-twitter", class: "theme-twitter", isDark: false },
+  { name: "Twitter Dark", value: "theme-twitter-dark", class: "theme-twitter-dark", isDark: true },
+  { name: "Cosmic Night", value: "theme-cosmic-night", class: "theme-cosmic-night", isDark: true },
+  { name: "Ocean Breeze", value: "theme-ocean-breeze", class: "theme-ocean-breeze", isDark: false },
+  { name: "Forest Green", value: "theme-forest-green", class: "theme-forest-green", isDark: true },
+  { name: "Sunset Orange", value: "theme-sunset-orange", class: "theme-sunset-orange", isDark: false },
+  { name: "Midnight Blue", value: "theme-midnight-blue", class: "theme-midnight-blue", isDark: true },
 ]
 
 export function ThemeSwitcher() {
@@ -45,9 +49,9 @@ export function ThemeSwitcher() {
               variant="outline"
               size="icon"
               onClick={() => setShowThemes(!showThemes)}
-              className="h-9 w-9"
+              className="h-9 w-9 rounded-xl border-0 bg-muted/30 backdrop-blur-xl hover:bg-muted/50"
             >
-              <Palette className="h-4 w-4" />
+              <Palette className="h-5 w-5" />
               <span className="sr-only">Toggle theme</span>
             </Button>
           </TooltipTrigger>
@@ -56,8 +60,8 @@ export function ThemeSwitcher() {
           </TooltipContent>
         </Tooltip>
         {showThemes && (
-          <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border bg-popover p-2 shadow-lg z-50">
-            <div className="text-xs font-medium mb-2 px-2">Select Theme</div>
+          <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-card/95 backdrop-blur-xl p-2 shadow-2xl z-50">
+            <div className="text-xs font-semibold mb-2 px-3 py-1 text-muted-foreground">Select Theme</div>
             <div className="space-y-1">
               {themes.map((themeOption) => (
                 <button
@@ -66,13 +70,13 @@ export function ThemeSwitcher() {
                     setTheme(themeOption.value)
                     setShowThemes(false)
                   }}
-                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-accent/50 transition-all ${
                     theme === themeOption.value
-                      ? "bg-accent text-accent-foreground"
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-2 border-blue-500/50"
                       : ""
                   }`}
                 >
-                  {themeOption.value === "dark" || themeOption.value === "theme-graphite" || themeOption.value === "theme-twitter-dark" || themeOption.value === "theme-cosmic" ? (
+                  {themeOption.isDark ? (
                     <Moon className="h-4 w-4" />
                   ) : (
                     <Sun className="h-4 w-4" />

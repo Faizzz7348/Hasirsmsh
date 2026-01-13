@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { CalendarComponent } from "@/components/calendar-component"
-import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 
 export default function CalendarPage() {
   return (
@@ -34,7 +33,6 @@ export default function CalendarPage() {
             <CalendarComponent />
           </div>
         </div>
-        <FloatingDockWrapper />
       </SidebarInset>
     </ResponsiveSidebarProvider>
   )

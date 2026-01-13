@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ResponsiveSidebarProvider } from "@/components/responsive-sidebar-provider"
+import { detailsData, type DetailData } from "@/lib/route-data"
 import {
   SidebarInset,
   SidebarTrigger,
@@ -26,7 +27,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ExternalLink, Info, Image as ImageIcon, Columns3, ListFilter, ArrowUp, ArrowDown, ArrowUpDown, GripVertical } from "lucide-react"
-import { FloatingDockWrapper } from "@/components/floating-dock-wrapper"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -38,93 +38,12 @@ interface RouteData {
   shift: string
 }
 
-interface DetailData {
-  id: number
-  no: number
-  code: string
-  location: string
-  delivery: string
-  thumbnail: string
-  status: boolean
-  description: string
-  images: string[]
-}
-
 const routesData: RouteData[] = [
   { id: 1, route: "KL 7", warehouse: "3PVK04", shift: "PM" },
   { id: 2, route: "KL 8", warehouse: "3PVK05", shift: "AM" },
   { id: 3, route: "KL 9", warehouse: "3PVK06", shift: "PM" },
   { id: 4, route: "SG 5", warehouse: "3PVK07", shift: "AM" },
   { id: 5, route: "JB 3", warehouse: "3PVK08", shift: "PM" },
-]
-
-const detailsData: DetailData[] = [
-  { 
-    id: 1, 
-    no: 1, 
-    code: "54", 
-    location: "RHB Complex", 
-    delivery: "Daily", 
-    thumbnail: "📦",
-    status: true,
-    description: "Premium delivery service for RHB Complex. Includes real-time tracking, secure handling, and priority processing. Operating hours: 8AM - 6PM daily.",
-    images: ["🏢", "🚚", "📍"]
-  },
-  { 
-    id: 2, 
-    no: 2, 
-    code: "78", 
-    location: "KLCC Tower", 
-    delivery: "Express", 
-    thumbnail: "🎁",
-    status: true,
-    description: "Express delivery service for KLCC Tower with same-day delivery guarantee. Climate-controlled transport available.",
-    images: ["🏙️", "⚡", "🎯"]
-  },
-  { 
-    id: 3, 
-    no: 3, 
-    code: "92", 
-    location: "Pavilion Mall", 
-    delivery: "Standard", 
-    thumbnail: "📮",
-    status: false,
-    description: "Standard delivery service for Pavilion Mall. Scheduled deliveries on weekdays with flexible time slots.",
-    images: ["🛍️", "🚐", "⏰"]
-  },
-  { 
-    id: 4, 
-    no: 4, 
-    code: "45", 
-    location: "Mid Valley", 
-    delivery: "Daily", 
-    thumbnail: "📦",
-    status: true,
-    description: "Daily bulk delivery service for Mid Valley. Specialized in handling large volume orders with dedicated support.",
-    images: ["🏬", "🚛", "📊"]
-  },
-  { 
-    id: 5, 
-    no: 5, 
-    code: "67", 
-    location: "Sunway Pyramid", 
-    delivery: "Express", 
-    thumbnail: "🎁",
-    status: false,
-    description: "Express courier service for Sunway Pyramid area. Features contactless delivery and photo confirmation.",
-    images: ["🏰", "🏃", "📸"]
-  },
-  { 
-    id: 6, 
-    no: 6, 
-    code: "89", 
-    location: "IOI City Mall", 
-    delivery: "Standard", 
-    thumbnail: "📮",
-    status: true,
-    description: "Standard logistics service for IOI City Mall with eco-friendly packaging options and carbon-neutral delivery.",
-    images: ["🏢", "♻️", "🌱"]
-  },
 ]
 
 export default function RoutesPage() {
@@ -142,12 +61,14 @@ export default function RoutesPage() {
     code: true,
     location: true,
     delivery: true,
+    longitude: true,
+    latitude: true,
     images: true,
     action: true,
   })
 
   // Column order state
-  const [columnOrder, setColumnOrder] = useState<(keyof typeof visibleColumns)[]>(["no", "code", "location", "delivery", "images", "action"])
+  const [columnOrder, setColumnOrder] = useState<(keyof typeof visibleColumns)[]>(["no", "code", "location", "delivery", "longitude", "latitude", "images", "action"])
 
   // Row customization state
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -341,6 +262,12 @@ export default function RoutesPage() {
                                 </span>
                               </TableCell>
                             )
+                          }
+                          if (col === "longitude") {
+                            return <TableCell key={col} className="text-center font-mono text-sm">{detail.longitude.toFixed(4)}</TableCell>
+                          }
+                          if (col === "latitude") {
+                            return <TableCell key={col} className="text-center font-mono text-sm">{detail.latitude.toFixed(4)}</TableCell>
                           }
                           if (col === "images") {
                             return <TableCell key={col} className="text-center text-2xl">{detail.thumbnail}</TableCell>
@@ -732,7 +659,6 @@ export default function RoutesPage() {
             </DialogContent>
           </Dialog>
         </div>
-        <FloatingDockWrapper />
       </SidebarInset>
     </ResponsiveSidebarProvider>
   )
