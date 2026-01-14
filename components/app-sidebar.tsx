@@ -14,6 +14,7 @@ import {
   Calendar,
   LogOut,
   MapPin,
+  Users,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -50,6 +51,11 @@ const navItems = [
     title: "Home",
     url: "/",
     icon: Home,
+  },
+  {
+    title: "Contact",
+    url: "/contact",
+    icon: Users,
   },
   {
     title: "Messages",

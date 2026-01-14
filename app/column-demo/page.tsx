@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Settings2 } from "lucide-react"
+import { PowerToggle } from "@/components/power-toggle"
 
 interface Column {
   id: string
@@ -29,6 +30,7 @@ const initialColumns: Column[] = [
   { id: "status", label: "Status", visible: true },
   { id: "joinDate", label: "Join Date", visible: false },
   { id: "lastActive", label: "Last Active", visible: false },
+  { id: "action", label: "Action", visible: true, locked: true },
 ]
 
 const sampleData = [
@@ -41,6 +43,7 @@ const sampleData = [
     status: "Active",
     joinDate: "2023-01-15",
     lastActive: "2 hours ago",
+    isActive: true,
   },
   {
     id: "002",
@@ -51,6 +54,7 @@ const sampleData = [
     status: "Active",
     joinDate: "2023-03-20",
     lastActive: "1 day ago",
+    isActive: true,
   },
   {
     id: "003",
@@ -61,14 +65,24 @@ const sampleData = [
     status: "Away",
     joinDate: "2022-11-10",
     lastActive: "3 days ago",
+    isActive: false,
   },
 ]
 
 export default function ColumnDemoPage() {
   const [columns, setColumns] = React.useState<Column[]>(initialColumns)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const [tableData, setTableData] = React.useState(sampleData)
 
   const visibleColumns = columns.filter((col) => col.visible)
+
+  const handlePowerToggle = (id: string, isOn: boolean) => {
+    setTableData(
+      tableData.map((item) =>
+        item.id === id ? { ...item, isActive: isOn } : item
+      )
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
@@ -99,11 +113,22 @@ export default function ColumnDemoPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sampleData.map((row) => (
-              <TableRow key={row.id}>
+            {tableData.map((row) => (
+              <TableRow
+                key={row.id}
+                className={row.isActive ? "" : "opacity-50"}
+              >
                 {visibleColumns.map((column) => (
                   <TableCell key={column.id}>
-                    {row[column.id as keyof typeof row]}
+                    {column.id === "action" ? (
+                      <PowerToggle
+                        id={row.id}
+                        defaultState={row.isActive}
+                        onToggle={(isOn) => handlePowerToggle(row.id, isOn)}
+                      />
+                    ) : (
+                      row[column.id as keyof typeof row]
+                    )}
                   </TableCell>
                 ))}
               </TableRow>

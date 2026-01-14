@@ -26,10 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ExternalLink, Info, Image as ImageIcon, Columns3, ListFilter, ArrowUp, ArrowDown, ArrowUpDown, GripVertical } from "lucide-react"
+import { ExternalLink, Info, Image as ImageIcon, Columns3, ListFilter, ArrowUp, ArrowDown, ArrowUpDown, GripVertical, Edit2, Check, X, Menu, Plus, Maximize2, Minimize2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PowerToggle } from "@/components/power-toggle"
 
 interface RouteData {
   id: number
@@ -50,10 +51,25 @@ export default function RoutesPage() {
   const [dialogVisible, setDialogVisible] = useState(false)
   const [infoDialogVisible, setInfoDialogVisible] = useState(false)
   const [selectedDetail, setSelectedDetail] = useState<DetailData | null>(null)
+  const [selectedRoute, setSelectedRoute] = useState<RouteData | null>(null)
   const [columnCustomizeVisible, setColumnCustomizeVisible] = useState(false)
   const [rowCustomizeVisible, setRowCustomizeVisible] = useState(false)
   const [columnReorderVisible, setColumnReorderVisible] = useState(false)
   const [rowReorderVisible, setRowReorderVisible] = useState(false)
+  
+  // Editable state for main table
+  const [editingMainRow, setEditingMainRow] = useState<number | null>(null)
+  const [mainTableData, setMainTableData] = useState<RouteData[]>(routesData)
+  
+  // Editable state for flex table - track both row and column
+  const [editingFlexCell, setEditingFlexCell] = useState<{rowId: number, column: string} | null>(null)
+  const [flexTableData, setFlexTableData] = useState<DetailData[]>(detailsData)
+  
+  // Hamburger menu state
+  const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false)
+  
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false)
   
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState({
@@ -77,6 +93,16 @@ export default function RoutesPage() {
   
   // Row order state
   const [rowOrder, setRowOrder] = useState<number[]>([1, 2, 3, 4, 5, 6])
+  
+  // Status state for each detail
+  const [detailStatuses, setDetailStatuses] = useState<Record<number, boolean>>(
+    flexTableData.reduce((acc, detail) => ({ ...acc, [detail.id]: detail.status }), {})
+  )
+  
+  // Power mode state for each detail
+  const [detailPowerModes, setDetailPowerModes] = useState<Record<number, string>>(
+    flexTableData.reduce((acc, detail) => ({ ...acc, [detail.id]: detail.powerMode }), {})
+  )
 
   const toggleColumn = (column: keyof typeof visibleColumns) => {
     setVisibleColumns(prev => ({ ...prev, [column]: !prev[column] }))
@@ -114,9 +140,16 @@ export default function RoutesPage() {
     }
   }
 
-  const sortedData = [...detailsData]
+  const sortedData = [...flexTableData]
+    .filter(detail => selectedRoute ? detail.route === selectedRoute.route : true)
     .sort((a, b) => {
-      // First apply custom row order
+      // First sort by status - ON items first, OFF items last
+      const aStatus = detailStatuses[a.id]
+      const bStatus = detailStatuses[b.id]
+      if (aStatus !== bStatus) {
+        return bStatus ? 1 : -1 // true (ON) comes before false (OFF)
+      }
+      // Then apply custom row order
       const aIndex = rowOrder.indexOf(a.id)
       const bIndex = rowOrder.indexOf(b.id)
       if (aIndex !== bIndex) {
@@ -133,9 +166,9 @@ export default function RoutesPage() {
     })
     .slice(0, rowsPerPage)
 
-  const toggleStatus = (id: number) => {
-    // Toggle status logic here
-    console.log(`Toggle status for id: ${id}`)
+  const toggleStatus = (id: number, newStatus: boolean) => {
+    setDetailStatuses(prev => ({ ...prev, [id]: newStatus }))
+    console.log(`Toggle status for id: ${id} - ${newStatus ? 'ON' : 'OFF'}`)
   }
 
   const showInfo = (detail: DetailData) => {
@@ -171,16 +204,128 @@ export default function RoutesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {routesData.map((route) => (
-                    <TableRow key={route.id}>
-                      <TableCell className="font-medium text-center">{route.route}</TableCell>
-                      <TableCell className="text-center">{route.warehouse}</TableCell>
-                      <TableCell className="text-center">{route.shift}</TableCell>
+                  {mainTableData.map((route) => (
+                    <TableRow 
+                      key={route.id} 
+                      className="group hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell 
+                        className="font-medium text-center relative group/cell text-[13px]"
+                        onDoubleClick={() => setEditingMainRow(route.id)}
+                      >
+                        {editingMainRow === route.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={route.route}
+                              onChange={(e) => {
+                                setMainTableData(prev => prev.map(r => 
+                                  r.id === route.id ? { ...r, route: e.target.value } : r
+                                ))
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') setEditingMainRow(null)
+                                if (e.key === 'Escape') setEditingMainRow(null)
+                              }}
+                              className="h-8 text-center"
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={() => setEditingMainRow(null)}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <span>{route.route}</span>
+                            <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        className="text-center relative group/cell text-[13px]"
+                        onDoubleClick={() => setEditingMainRow(route.id)}
+                      >
+                        {editingMainRow === route.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={route.warehouse}
+                              onChange={(e) => {
+                                setMainTableData(prev => prev.map(r => 
+                                  r.id === route.id ? { ...r, warehouse: e.target.value } : r
+                                ))
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') setEditingMainRow(null)
+                                if (e.key === 'Escape') setEditingMainRow(null)
+                              }}
+                              className="h-8 text-center"
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={() => setEditingMainRow(null)}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <span>{route.warehouse}</span>
+                            <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        className="text-center relative group/cell text-[13px]"
+                        onDoubleClick={() => setEditingMainRow(route.id)}
+                      >
+                        {editingMainRow === route.id ? (
+                          <div className="flex items-center gap-1">
+                            <select
+                              value={route.shift}
+                              onChange={(e) => {
+                                setMainTableData(prev => prev.map(r => 
+                                  r.id === route.id ? { ...r, shift: e.target.value } : r
+                                ))
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') setEditingMainRow(null)
+                                if (e.key === 'Escape') setEditingMainRow(null)
+                              }}
+                              className="h-8 px-3 border rounded-md bg-background text-center focus:ring-2 focus:ring-primary"
+                            >
+                              <option value="AM">AM</option>
+                              <option value="PM">PM</option>
+                            </select>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={() => setEditingMainRow(null)}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <span>{route.shift}</span>
+                            <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => setDialogVisible(true)}
+                          onClick={() => {
+                            setSelectedRoute(route)
+                            setDialogVisible(true)
+                          }}
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Show
@@ -195,40 +340,133 @@ export default function RoutesPage() {
           </Card>
 
           <Dialog open={dialogVisible} onOpenChange={setDialogVisible}>
-            <DialogContent className="max-w-[85vw] max-h-[85vh]">
-              <DialogHeader>
-                <DialogTitle>Flex Scroll</DialogTitle>
+            <DialogContent className={`${isFullscreen ? 'max-w-[100vw] max-h-[100vh] w-screen h-screen m-0 rounded-none p-4' : 'max-w-[85vw] max-h-[85vh]'} [&>button]:hidden transition-all duration-500`}>
+              <DialogHeader className={isFullscreen ? 'pb-2' : ''}>
+                <DialogTitle className={isFullscreen ? 'mb-0' : ''}>
+                  <div className="flex items-center justify-between w-full">
+                    {selectedRoute && (
+                      <div className="flex items-center gap-3">
+                        {/* Flag Icon */}
+                        {selectedRoute.route.startsWith('KL') && (
+                          <img 
+                            src="/icon/kl-flag.png" 
+                            alt="KL Flag" 
+                            className="w-16 h-[70px] object-contain"
+                          />
+                        )}
+                        {selectedRoute.route.startsWith('SL') && (
+                          <img 
+                            src="/icon/selangor-flag.png" 
+                            alt="Selangor Flag" 
+                            className="w-16 h-[70px] object-contain"
+                          />
+                        )}
+                        <div className="flex flex-col gap-0">
+                          <span className="text-lg font-semibold">Route {selectedRoute.route}</span>
+                          <span className="text-sm font-normal text-muted-foreground">{selectedRoute.warehouse} - {selectedRoute.shift}</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      {/* Fullscreen Button */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setIsFullscreen(!isFullscreen)}
+                        className="p-2 hover:bg-muted"
+                        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                      >
+                        {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                      </Button>
+                      
+                      {/* Hamburger Menu */}
+                      <div className="relative">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setHamburgerMenuOpen(!hamburgerMenuOpen)}
+                        className="p-2 hover:bg-muted"
+                      >
+                        <div className="flex flex-col gap-1 w-6 h-6 items-center justify-center">
+                          <span className={`h-0.5 w-5 bg-current transition-all duration-300 ${hamburgerMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                          <span className={`h-0.5 w-5 bg-current transition-all duration-300 ${hamburgerMenuOpen ? 'opacity-0' : ''}`}></span>
+                          <span className={`h-0.5 w-5 bg-current transition-all duration-300 ${hamburgerMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                        </div>
+                      </Button>
+                      
+                      {/* Dropdown Menu */}
+                      {hamburgerMenuOpen && (
+                        <div className="absolute right-0 top-12 bg-background border rounded-lg shadow-lg p-2 min-w-[200px] z-50">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              // Add new row logic here
+                              const newRow: DetailData = {
+                                id: Math.max(...flexTableData.map(d => d.id)) + 1,
+                                no: flexTableData.filter(d => d.route === selectedRoute?.route).length + 1,
+                                code: "",
+                                location: "New Location",
+                                delivery: "Daily",
+                                thumbnail: "📍",
+                                status: true,
+                                powerMode: "Daily",
+                                description: "",
+                                images: [],
+                                longitude: 0,
+                                latitude: 0,
+                                route: selectedRoute?.route || ""
+                              }
+                              setFlexTableData(prev => [...prev, newRow])
+                              setDetailStatuses(prev => ({ ...prev, [newRow.id]: true }))
+                              setDetailPowerModes(prev => ({ ...prev, [newRow.id]: "Daily" }))
+                              setHamburgerMenuOpen(false)
+                            }}
+                            className="w-full justify-start flex items-center gap-2 hover:bg-muted"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add New Row
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setColumnCustomizeVisible(true)
+                              setHamburgerMenuOpen(false)
+                            }}
+                            className="w-full justify-start flex items-center gap-2 hover:bg-muted"
+                          >
+                            <Columns3 className="h-4 w-4" />
+                            Column Customize
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setRowCustomizeVisible(true)
+                              setHamburgerMenuOpen(false)
+                            }}
+                            className="w-full justify-start flex items-center gap-2 hover:bg-muted"
+                          >
+                            <ListFilter className="h-4 w-4" />
+                            Row Customize
+                          </Button>
+                        </div>
+                      )}
+                      </div>
+                    </div>
+                  </div>
+                </DialogTitle>
               </DialogHeader>
-              
-              {/* Customize Buttons */}
-              <div className="flex gap-2 mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setColumnCustomizeVisible(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Columns3 className="h-4 w-4" />
-                  Column Customize
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setRowCustomizeVisible(true)}
-                  className="flex items-center gap-2"
-                >
-                  <ListFilter className="h-4 w-4" />
-                  Row Customize
-                </Button>
-              </div>
 
-              <div className="overflow-auto max-h-[calc(85vh-180px)] relative">
+              <div className={`overflow-auto ${isFullscreen ? 'max-h-[calc(100vh-120px)]' : 'max-h-[calc(85vh-180px)]'} relative`}>
                 <Table>
                   <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                    <TableRow>
+                    <TableRow className="h-10">
                       {columnOrder.map((col) => 
                         visibleColumns[col] && (
-                          <TableHead key={col} className="text-center font-semibold capitalize">
+                          <TableHead key={col} className="text-center font-semibold capitalize py-2">
                             {col}
                           </TableHead>
                         )
@@ -237,60 +475,252 @@ export default function RoutesPage() {
                   </TableHeader>
                   <TableBody>
                     {sortedData.map((detail) => (
-                      <TableRow key={detail.id}>
+                      <TableRow key={detail.id} className={`transition-opacity duration-300 h-12 ${!detailStatuses[detail.id] ? 'opacity-40' : 'opacity-100'}`}>
                         {columnOrder.map((col) => {
                           if (!visibleColumns[col]) return null
                           
                           if (col === "no") {
-                            return <TableCell key={col} className="text-center font-medium">{detail.no}</TableCell>
+                            return <TableCell key={col} className="text-center font-semibold text-[12px] py-2">{detail.no}</TableCell>
                           }
                           if (col === "code") {
-                            return <TableCell key={col} className="text-center font-semibold text-primary">{detail.code}</TableCell>
+                            return (
+                              <TableCell 
+                                key={col} 
+                                className="text-center font-semibold text-primary group/cell text-[12px] py-2"
+                                onDoubleClick={() => setEditingFlexCell({rowId: detail.id, column: 'code'})}
+                              >
+                                {editingFlexCell?.rowId === detail.id && editingFlexCell?.column === 'code' ? (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <Input
+                                      value={detail.code}
+                                      onChange={(e) => {
+                                        setFlexTableData(prev => prev.map(d => 
+                                          d.id === detail.id ? { ...d, code: e.target.value } : d
+                                        ))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') setEditingFlexCell(null)
+                                        if (e.key === 'Escape') setEditingFlexCell(null)
+                                      }}
+                                      className="h-8 text-center w-20"
+                                      autoFocus
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => setEditingFlexCell(null)}
+                                    >
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{detail.code}</span>
+                                    <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                                  </div>
+                                )}
+                              </TableCell>
+                            )
                           }
                           if (col === "location") {
-                            return <TableCell key={col} className="text-center">{detail.location}</TableCell>
+                            return (
+                              <TableCell 
+                                key={col} 
+                                className="text-center group/cell text-[12px] font-semibold py-2"
+                                onDoubleClick={() => setEditingFlexCell({rowId: detail.id, column: 'location'})}
+                              >
+                                {editingFlexCell?.rowId === detail.id && editingFlexCell?.column === 'location' ? (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <Input
+                                      value={detail.location}
+                                      onChange={(e) => {
+                                        setFlexTableData(prev => prev.map(d => 
+                                          d.id === detail.id ? { ...d, location: e.target.value } : d
+                                        ))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') setEditingFlexCell(null)
+                                        if (e.key === 'Escape') setEditingFlexCell(null)
+                                      }}
+                                      className="h-8 text-center"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => setEditingFlexCell(null)}
+                                    >
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{detail.location}</span>
+                                    <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                                  </div>
+                                )}
+                              </TableCell>
+                            )
                           }
                           if (col === "delivery") {
                             return (
-                              <TableCell key={col} className="text-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  detail.delivery === 'Express' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                  detail.delivery === 'Daily' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                                }`}>
-                                  {detail.delivery}
-                                </span>
+                              <TableCell 
+                                key={col} 
+                                className="text-center group/cell text-[12px] font-semibold py-2"
+                                onDoubleClick={() => setEditingFlexCell({rowId: detail.id, column: 'delivery'})}
+                              >
+                                {editingFlexCell?.rowId === detail.id && editingFlexCell?.column === 'delivery' ? (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <select
+                                      value={detail.delivery}
+                                      onChange={(e) => {
+                                        setFlexTableData(prev => prev.map(d => 
+                                          d.id === detail.id ? { ...d, delivery: e.target.value } : d
+                                        ))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') setEditingFlexCell(null)
+                                        if (e.key === 'Escape') setEditingFlexCell(null)
+                                      }}
+                                      className="h-8 px-3 border rounded-md bg-background text-center focus:ring-2 focus:ring-primary"
+                                      autoFocus
+                                    >
+                                      <option value="Daily">Daily</option>
+                                      <option value="Weekday">Weekday</option>
+                                      <option value="Alt 1">Alt 1</option>
+                                      <option value="Alt 2">Alt 2</option>
+                                    </select>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => setEditingFlexCell(null)}
+                                    >
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{detail.delivery}</span>
+                                    <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                                  </div>
+                                )}
                               </TableCell>
                             )
                           }
                           if (col === "longitude") {
-                            return <TableCell key={col} className="text-center font-mono text-sm">{detail.longitude.toFixed(4)}</TableCell>
+                            return (
+                              <TableCell 
+                                key={col} 
+                                className="text-center font-mono text-[11px] font-semibold group/cell py-2"
+                                onDoubleClick={() => setEditingFlexCell({rowId: detail.id, column: 'longitude'})}
+                              >
+                                {editingFlexCell?.rowId === detail.id && editingFlexCell?.column === 'longitude' ? (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <Input
+                                      type="number"
+                                      step="0.0001"
+                                      value={detail.longitude}
+                                      onChange={(e) => {
+                                        setFlexTableData(prev => prev.map(d => 
+                                          d.id === detail.id ? { ...d, longitude: parseFloat(e.target.value) || 0 } : d
+                                        ))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') setEditingFlexCell(null)
+                                        if (e.key === 'Escape') setEditingFlexCell(null)
+                                      }}
+                                      className="h-8 text-center font-mono w-28"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => setEditingFlexCell(null)}
+                                    >
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{detail.longitude.toFixed(4)}</span>
+                                    <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                                  </div>
+                                )}
+                              </TableCell>
+                            )
                           }
                           if (col === "latitude") {
-                            return <TableCell key={col} className="text-center font-mono text-sm">{detail.latitude.toFixed(4)}</TableCell>
+                            return (
+                              <TableCell 
+                                key={col} 
+                                className="text-center font-mono text-[11px] font-semibold group/cell py-2"
+                                onDoubleClick={() => setEditingFlexCell({rowId: detail.id, column: 'latitude'})}
+                              >
+                                {editingFlexCell?.rowId === detail.id && editingFlexCell?.column === 'latitude' ? (
+                                  <div className="flex items-center gap-1 justify-center">
+                                    <Input
+                                      type="number"
+                                      step="0.0001"
+                                      value={detail.latitude}
+                                      onChange={(e) => {
+                                        setFlexTableData(prev => prev.map(d => 
+                                          d.id === detail.id ? { ...d, latitude: parseFloat(e.target.value) || 0 } : d
+                                        ))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') setEditingFlexCell(null)
+                                        if (e.key === 'Escape') setEditingFlexCell(null)
+                                      }}
+                                      className="h-8 text-center font-mono w-28"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => setEditingFlexCell(null)}
+                                    >
+                                      <Check className="h-3 w-3 text-green-600" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{detail.latitude.toFixed(4)}</span>
+                                    <Edit2 className="h-3 w-3 opacity-0 group-hover/cell:opacity-50 transition-opacity" />
+                                  </div>
+                                )}
+                              </TableCell>
+                            )
                           }
                           if (col === "images") {
-                            return <TableCell key={col} className="text-center text-2xl">{detail.thumbnail}</TableCell>
+                            return <TableCell key={col} className="text-center text-xl py-2">{detail.thumbnail}</TableCell>
                           }
                           if (col === "action") {
                             return (
-                              <TableCell key={col} className="text-center">
+                              <TableCell key={col} className="text-center py-2">
                                 <div className="flex items-center justify-center gap-2">
-                                  <Button 
-                                    variant={detail.status ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => toggleStatus(detail.id)}
-                                    className="min-w-[60px]"
-                                  >
-                                    {detail.status ? "ON" : "OFF"}
-                                  </Button>
+                                  <PowerToggle 
+                                    id={detail.id}
+                                    defaultState={detailStatuses[detail.id]}
+                                    powerMode={detailPowerModes[detail.id]}
+                                    onToggle={(isOn) => {
+                                      toggleStatus(detail.id, isOn)
+                                    }}
+                                    onPowerModeChange={(mode) => {
+                                      setDetailPowerModes(prev => ({
+                                        ...prev,
+                                        [detail.id]: mode
+                                      }))
+                                    }}
+                                  />
                                   <Button 
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => showInfo(detail)}
                                     className="hover:bg-primary/10"
                                   >
-                                    <Info className="h-4 w-4" />
+                                    <Info className="h-[35px] w-[35px]" />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -303,9 +733,14 @@ export default function RoutesPage() {
                   </TableBody>
                 </Table>
               </div>
-              <DialogFooter>
-                <Button onClick={() => setDialogVisible(false)}>
-                  Ok
+              
+              <DialogFooter className={`${isFullscreen ? 'px-4 py-3' : 'py-3'}`}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDialogVisible(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Close
                 </Button>
               </DialogFooter>
             </DialogContent>

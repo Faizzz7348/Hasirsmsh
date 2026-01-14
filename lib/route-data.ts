@@ -6,6 +6,7 @@ export interface DetailData {
   delivery: string
   thumbnail: string
   status: boolean
+  powerMode: string
   description: string
   images: string[]
   longitude: number
@@ -22,6 +23,7 @@ export const detailsData: DetailData[] = [
     delivery: "Daily", 
     thumbnail: "📦",
     status: true,
+    powerMode: "Daily",
     description: "Premium delivery service for RHB Complex. Includes real-time tracking, secure handling, and priority processing. Operating hours: 8AM - 6PM daily.",
     images: ["🏢", "🚚", "📍"],
     longitude: 101.7068,
@@ -36,6 +38,7 @@ export const detailsData: DetailData[] = [
     delivery: "Express", 
     thumbnail: "🎁",
     status: true,
+    powerMode: "Alt 1",
     description: "Express delivery service for KLCC Tower with same-day delivery guarantee. Climate-controlled transport available.",
     images: ["🏙️", "⚡", "🎯"],
     longitude: 101.7115,
@@ -50,6 +53,7 @@ export const detailsData: DetailData[] = [
     delivery: "Standard", 
     thumbnail: "📮",
     status: false,
+    powerMode: "Alt 2",
     description: "Standard delivery service for Pavilion Mall. Scheduled deliveries on weekdays with flexible time slots.",
     images: ["🛍️", "🚐", "⏰"],
     longitude: 101.7137,
@@ -64,6 +68,7 @@ export const detailsData: DetailData[] = [
     delivery: "Daily", 
     thumbnail: "📦",
     status: true,
+    powerMode: "Weekday",
     description: "Daily bulk delivery service for Mid Valley. Specialized in handling large volume orders with dedicated support.",
     images: ["🏬", "🚛", "📊"],
     longitude: 101.6776,
@@ -78,6 +83,7 @@ export const detailsData: DetailData[] = [
     delivery: "Express", 
     thumbnail: "🎁",
     status: false,
+    powerMode: "Daily",
     description: "Express courier service for Sunway Pyramid area. Features contactless delivery and photo confirmation.",
     images: ["🏰", "🏃", "📸"],
     longitude: 101.6069,
@@ -92,6 +98,7 @@ export const detailsData: DetailData[] = [
     delivery: "Standard", 
     thumbnail: "📮",
     status: true,
+    powerMode: "Alt 1",
     description: "Standard logistics service for IOI City Mall with eco-friendly packaging options and carbon-neutral delivery.",
     images: ["🏢", "♻️", "🌱"],
     longitude: 101.7288,
